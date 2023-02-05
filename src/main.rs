@@ -7,8 +7,6 @@
 
 pub mod board;
 pub mod game;
-pub mod gui;
-pub mod terminal;
 
 fn main() {
     println!("Hello World 🌏");

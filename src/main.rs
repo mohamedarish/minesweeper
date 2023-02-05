@@ -5,8 +5,8 @@
     clippy::unwrap_used
 )]
 
-pub mod board;
 pub mod game;
+pub mod tiles;
 
 fn main() {
     println!("Hello World 🌏");

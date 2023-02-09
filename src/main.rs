@@ -5,9 +5,13 @@
     clippy::unwrap_used
 )]
 
+use game::game_loop;
+
 pub mod game;
 pub mod tiles;
 
 fn main() {
-    println!("Hello World 🌏");
+    // println!("Hello World 🌏");
+
+    game_loop();
 }

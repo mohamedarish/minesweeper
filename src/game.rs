@@ -1,4 +1,4 @@
-struct Click {
-    x: usize,
-    y: usize,
+pub(crate) struct Click {
+    pub x: usize,
+    pub y: usize,
 }

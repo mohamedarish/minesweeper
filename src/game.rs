@@ -7,23 +7,32 @@ pub(crate) struct Click {
     pub y: usize,
 }
 
+#[derive(PartialEq)]
+enum Status {
+    None,
+    Lose,
+    Win,
+}
+
 struct Game {
     board: Board,
-    quit_issued: bool,
+    result: Status,
 }
 
 impl Game {
-    fn default(initial_click: &Click, number_of_mines: usize) -> Self {
+    fn default() -> Self {
         Self {
-            board: Board::new(initial_click, number_of_mines),
-            quit_issued: false,
+            board: Board::default(),
+            result: Status::None,
         }
     }
 }
 
 // This function will be used to play the terminal version of the game
 pub(crate) fn game_loop() {
-    Board::default().print_board();
+    let mut game = Game::default();
+
+    game.board.print_board();
 
     println!("Enter the first tile to click");
 
@@ -31,15 +40,32 @@ pub(crate) fn game_loop() {
 
     // println!("{}, {}", clicked_tile.x, clicked_tile.y);
 
-    let mut game = Game::default(&clicked_tile, 10);
+    game.board.generate_mines(&clicked_tile, 10);
 
     loop {
         game.board.print_board();
 
-        game.quit_issued = true;
+        // game.board.reveal_solution();
 
-        if game.quit_issued {
-            println!("GoodBye👋");
+        let new_click = get_valid_click();
+
+        let issue = game.board.reveal_tile(new_click.x, new_click.y);
+
+        if issue < 0 {
+            game.result = Status::Lose;
+        }
+        if game.board.remaining_unrevealed_tiles() <= 10 {
+            game.result = Status::Win;
+        }
+
+        if game.result != Status::None {
+            if game.result == Status::Win {
+                game.board.print_board();
+                println!("Congrats");
+            } else {
+                game.board.reveal_solution();
+                println!("Better Luck Next Time");
+            }
             break;
         }
     }
@@ -101,4 +127,4 @@ fn get_valid_click() -> Click {
     }
 }
 
-impl Game {}
+// impl Game {}

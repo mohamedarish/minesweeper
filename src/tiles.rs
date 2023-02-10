@@ -17,18 +17,141 @@ impl Default for Board {
 }
 
 impl Board {
-    pub(crate) fn new(initial_click: &Click, number_of_mines: usize) -> Self {
-        let mut new_board = Self::default();
+    pub(crate) fn generate_mines(&mut self, initial_click: &Click, number_of_mines: usize) {
+        self.generate_board(initial_click, number_of_mines);
 
-        new_board.generate_board(initial_click, number_of_mines);
-
-        new_board.reveal_tile(initial_click.x, initial_click.y);
-
-        new_board
+        self.reveal_tile(initial_click.x, initial_click.y);
     }
 
-    fn reveal_tile(&mut self, x: usize, y: usize) {
+    fn reveal_nearby_columns(&mut self, x: usize, y: usize) {
+        if x > 0 && x < 7 {
+            for i in (x - 1)..(x + 2) {
+                self.reveal_nearby_rows(x, y, i);
+            }
+        } else if x == 0 {
+            for i in 0..(x + 2) {
+                self.reveal_nearby_rows(x, y, i);
+            }
+        } else if x == 7 {
+            for i in (x - 1)..8 {
+                self.reveal_nearby_rows(x, y, i);
+            }
+        }
+    }
+
+    fn reveal_nearby_rows(&mut self, x: usize, y: usize, i: usize) {
+        if y > 0 && y < 7 {
+            for j in (y - 1)..(y + 2) {
+                if i != x || j != y {
+                    self.reveal_tile(i, j);
+                }
+            }
+        } else if y == 0 {
+            for j in 0..(y + 2) {
+                if i != x || j != y {
+                    self.reveal_tile(i, j);
+                }
+            }
+        } else if y == 7 {
+            for j in (y - 1)..8 {
+                if i != x || j != y {
+                    self.reveal_tile(i, j);
+                }
+            }
+        }
+    }
+
+    // fn reveal_nearby_tiles(&mut self, x: usize, y: usize) {
+    //     if x > 0 && x < 7 {
+    //         for i in (x - 1)..(x + 2) {
+    //             if y > 0 && y < 7 {
+    //                 for j in (y - 1)..(y + 2) {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             } else if y == 0 {
+    //                 for j in 0..(y + 2) {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             } else if y == 7 {
+    //                 for j in (y - 1)..8 {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     } else if x == 0 {
+    //         for i in 0..(x + 2) {
+    //             if y > 0 && y < 7 {
+    //                 for j in (y - 1)..(y + 2) {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             } else if y == 0 {
+    //                 for j in 0..(y + 2) {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             } else if y == 7 {
+    //                 for j in (y - 1)..8 {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     } else if x == 7 {
+    //         for i in (x - 1)..8 {
+    //             if y > 0 && y < 7 {
+    //                 for j in (y - 1)..(y + 2) {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             } else if y == 0 {
+    //                 for j in 0..(y + 2) {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             } else if y == 7 {
+    //                 for j in (y - 1)..8 {
+    //                     if i != x || j != y {
+    //                         self.reveal_tile(i, j);
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    pub(crate) fn reveal_tile(&mut self, x: usize, y: usize) -> i32 {
+        let Tile(number) = self.0[y][x][1];
+
+        let Tile(revealed) = self.0[y][x][0];
+
+        if revealed > -2 {
+            return 1;
+        }
+
         self.0[y][x][0] = self.0[y][x][1];
+
+        match number.cmp(&0) {
+            cmp::Ordering::Less => {
+                return -1;
+            }
+            cmp::Ordering::Equal => {
+                self.reveal_nearby_columns(x, y);
+            }
+            cmp::Ordering::Greater => {}
+        };
+        0
     }
 
     fn generate_board(&mut self, initial_click: &Click, number_of_mines: usize) {
@@ -36,6 +159,22 @@ impl Board {
             self.add_new_mine(initial_click);
             // println!("Succesfully added a mine");
         }
+    }
+
+    pub(crate) fn remaining_unrevealed_tiles(&self) -> i32 {
+        let mut remaining_tiles = 0;
+
+        for i in self.0 {
+            for j in i {
+                let Tile(num) = j[0];
+
+                if num < -1 {
+                    remaining_tiles += 1;
+                }
+            }
+        }
+
+        remaining_tiles
     }
 
     fn add_new_mine(&mut self, initial_click: &Click) {

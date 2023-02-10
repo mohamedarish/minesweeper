@@ -1,5 +1,7 @@
 use std::{io, num::ParseIntError};
 
+use druid::Data;
+
 use crate::tiles::Board;
 
 pub(crate) struct Click {
@@ -7,20 +9,21 @@ pub(crate) struct Click {
     pub y: usize,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Data)]
 enum Status {
     None,
     Lose,
     Win,
 }
 
+#[derive(Data, Clone)]
 pub(crate) struct Game {
-    board: Board,
+    pub(crate) board: Board,
     result: Status,
 }
 
 impl Game {
-    fn default() -> Self {
+    pub(crate) fn default() -> Self {
         Self {
             board: Board::default(),
             result: Status::None,

@@ -6,7 +6,7 @@
 )]
 
 use druid::{AppLauncher, WindowDesc};
-use game::game_loop;
+use game::{game_loop, Game};
 use gui::build_board;
 
 pub mod game;
@@ -18,12 +18,14 @@ fn main() {
 
     // game_loop();
 
-    let window = WindowDesc::new(build_board())
+    let new_game = Game::default();
+
+    let window = WindowDesc::new(build_board(&new_game.board))
         .window_size((600., 600.))
         .title("Minesweeper 💣");
 
     AppLauncher::with_window(window)
-        .launch(())
+        .launch(new_game)
         .expect("Failed to launch application");
 
     // for terminal version of the gaem

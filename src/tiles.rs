@@ -1,14 +1,15 @@
 use std::cmp;
 
+use druid::Data;
 use rand::Rng;
 
 use crate::game::Click;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-struct Tile(i32);
+#[derive(Clone, Copy, Debug, PartialEq, Data)]
+pub(crate) struct Tile(pub i32);
 
-#[derive(Clone, Copy)]
-pub(crate) struct Board([[[Tile; 2]; 8]; 8]);
+#[derive(Clone, Copy, Data)]
+pub(crate) struct Board(pub [[[Tile; 2]; 8]; 8]);
 
 impl Default for Board {
     fn default() -> Self {

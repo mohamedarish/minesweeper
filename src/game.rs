@@ -14,7 +14,7 @@ enum Status {
     Win,
 }
 
-struct Game {
+pub(crate) struct Game {
     board: Board,
     result: Status,
 }

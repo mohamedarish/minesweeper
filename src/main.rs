@@ -6,7 +6,7 @@
 )]
 
 use druid::{AppLauncher, WindowDesc};
-use game::{game_loop, Game};
+use game::{game_loop, Click, Game};
 use gui::build_board;
 
 pub mod game;
@@ -18,9 +18,13 @@ fn main() {
 
     // game_loop();
 
-    let new_game = Game::default();
+    let mut new_game = Game::default();
 
-    let window = WindowDesc::new(build_board(&new_game.board))
+    new_game.board.generate_mines(&Click { x: 0, y: 0 }, 10);
+
+    // new_game.board.reveal_solution();
+
+    let window = WindowDesc::new(build_board())
         .window_size((600., 600.))
         .title("Minesweeper 💣");
 

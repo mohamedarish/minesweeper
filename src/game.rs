@@ -4,6 +4,7 @@ use druid::Data;
 
 use crate::tiles::Board;
 
+#[derive(Clone, Copy)]
 pub(crate) struct Click {
     pub x: usize,
     pub y: usize,
@@ -11,8 +12,8 @@ pub(crate) struct Click {
 
 #[derive(PartialEq, Clone, Data)]
 enum Status {
-    None,
     Lose,
+    None,
     Win,
 }
 
@@ -99,16 +100,12 @@ fn get_valid_click() -> Click {
         //     }
         // };
 
-        let y = if let Ok(num) = next_num() {
-            num
-        } else {
+        let Ok(y) = next_num() else {
             println!("Please enter a valid number!");
             continue;
         };
 
-        let x = if let Ok(num) = next_num() {
-            num
-        } else {
+        let Ok(x) = next_num() else {
             println!("Please enter a valid number!");
             continue;
         };

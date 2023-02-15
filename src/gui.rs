@@ -1,42 +1,37 @@
 use druid::{
     widget::{Flex, Label},
-    Widget, WidgetExt,
+    Color, LocalizedString, Widget, WidgetExt,
 };
 
 use crate::{
-    game::Game,
-    tiles::{Board, Tile},
+    game::{Click, Game},
+    tiles::Tile,
 };
 
-fn make_tile(number: i32) -> impl Widget<Game> {
-    let mut character_to_display = String::new();
+fn make_tile(position: Click) -> impl Widget<Game> {
+    let text = LocalizedString::new("hello-counter").with_arg("count", move |data: &Game, _env| {
+        let Tile(record) = data.board.0[position.y][position.x][1];
 
-    match number.cmp(&0) {
-        std::cmp::Ordering::Less => {
-            if number >= -1 {
-                character_to_display += &String::from("💣");
-            } else {
-                character_to_display += &String::from("🦒");
-            }
-        }
-        std::cmp::Ordering::Equal => {
-            character_to_display += &String::from("🚮");
-        }
-        std::cmp::Ordering::Greater => character_to_display += &String::from(&format!("{number}")),
-    }
+        // println!("{record}");
 
-    Label::new(character_to_display.to_string()).padding(5.)
+        format!("{record}").into()
+    });
+
+    Label::new(text)
+        .padding(5.)
+        .on_click(move |_ctx, data: &mut Game, _env| {
+            data.board.reveal_tile(position.x, position.y);
+        })
+        .border(Color::rgb(99., 00., 00.), 1.)
 }
 
-pub(crate) fn build_board(board: &Board) -> impl Widget<Game> {
+pub(crate) fn build_board() -> impl Widget<Game> {
     let mut game_board = Flex::column();
 
-    for i in board.0 {
+    for i in 0..8 {
         let mut new_row = Flex::row();
-        for j in i {
-            let Tile(number) = j[0];
-
-            new_row.add_child(make_tile(number));
+        for j in 0..8 {
+            new_row.add_child(make_tile(Click { x: i, y: j }));
         }
 
         game_board.add_child(new_row);

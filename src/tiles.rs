@@ -266,7 +266,7 @@ impl Board {
 }
 
 impl Board {
-    pub(crate) fn print_board(self) {
+    pub(crate) fn print_board(&self) {
         for row in self.0 {
             for tile in row {
                 let Tile(number) = tile[0];
@@ -287,7 +287,7 @@ impl Board {
         }
     }
 
-    pub(crate) fn reveal_solution(self) {
+    pub(crate) fn reveal_solution(&self) {
         for row in self.0 {
             for tile in row {
                 let Tile(number) = tile[1];

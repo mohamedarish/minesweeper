@@ -18,8 +18,6 @@ impl Default for Board {
 impl Board {
     pub(crate) fn generate_mines(&mut self, initial_click: &Click, number_of_mines: usize) {
         self.generate_board(initial_click, number_of_mines);
-
-        self.reveal_tile(initial_click.x, initial_click.y);
     }
 
     fn reveal_nearby_columns(&mut self, x: usize, y: usize) {
@@ -130,7 +128,7 @@ impl Board {
     //     }
     // }
 
-    fn is_new_board(&mut self) -> bool {
+    fn is_new_board(&self) -> bool {
         for i in self.0 {
             for j in i {
                 let Tile(number) = j[0];
@@ -146,10 +144,7 @@ impl Board {
 
     pub(crate) fn reveal_tile(&mut self, x: usize, y: usize) -> i32 {
         if self.is_new_board() {
-            println!("It's a new board");
             self.generate_mines(&Click { x, y }, 10);
-
-            return 1;
         }
 
         let Tile(number) = self.0[y][x][1];
@@ -178,7 +173,6 @@ impl Board {
         for _ in 0..number_of_mines {
             self.add_new_mine(initial_click);
             // println!("Succesfully added a mine");
-            println!("Added another mine");
         }
     }
 

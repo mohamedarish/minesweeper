@@ -34,16 +34,6 @@ impl Game {
 pub(crate) fn game_loop() {
     let mut game = Game::default();
 
-    game.board.print_board();
-
-    println!("Enter the first tile to click");
-
-    let clicked_tile = get_valid_click();
-
-    // println!("{}, {}", clicked_tile.x, clicked_tile.y);
-
-    game.board.generate_mines(&clicked_tile, 10);
-
     loop {
         game.board.print_board();
 

@@ -3,3 +3,5 @@
 Cargo.lock
 
 bacon*
+
+.DS_Store

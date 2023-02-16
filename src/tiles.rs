@@ -1,14 +1,12 @@
-use std::cmp;
-
-use druid::Data;
 use rand::Rng;
+use std::cmp;
 
 use crate::game::Click;
 
-#[derive(Clone, Copy, Debug, PartialEq, Data)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) struct Tile(pub i32);
 
-#[derive(Clone, Copy, Data)]
+#[derive(Clone, Copy)]
 pub(crate) struct Board(pub [[[Tile; 2]; 8]; 8]);
 
 impl Default for Board {
@@ -132,7 +130,28 @@ impl Board {
     //     }
     // }
 
+    fn is_new_board(&mut self) -> bool {
+        for i in self.0 {
+            for j in i {
+                let Tile(number) = j[0];
+
+                if number > -2 {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
     pub(crate) fn reveal_tile(&mut self, x: usize, y: usize) -> i32 {
+        if self.is_new_board() {
+            println!("It's a new board");
+            self.generate_mines(&Click { x, y }, 10);
+
+            return 1;
+        }
+
         let Tile(number) = self.0[y][x][1];
 
         let Tile(revealed) = self.0[y][x][0];
@@ -159,6 +178,7 @@ impl Board {
         for _ in 0..number_of_mines {
             self.add_new_mine(initial_click);
             // println!("Succesfully added a mine");
+            println!("Added another mine");
         }
     }
 

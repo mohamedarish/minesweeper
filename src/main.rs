@@ -5,14 +5,20 @@
     clippy::unwrap_used
 )]
 
-use game::game_loop;
-
-pub mod game;
-pub mod tiles;
+use iced::{Application, Settings};
+use minesweeper::game::Game;
+use stopwatch::Stopwatch;
 
 fn main() {
     // println!("Hello World 🌏");
 
     // for terminal version of the gaem
-    game_loop();
+
+    let sw = Stopwatch::start_new();
+
+    // game_loop();
+
+    Game::run(Settings::default()).expect("Working");
+
+    println!("Finished in {} ms", sw.elapsed_ms());
 }

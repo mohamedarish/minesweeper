@@ -1,13 +1,12 @@
-use rand::Rng;
 use std::cmp;
 
-use crate::game::Click;
+use crate::{game::Click, get_random_number};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub(crate) struct Tile(pub i32);
+pub struct Tile(pub i32);
 
 #[derive(Clone, Copy)]
-pub(crate) struct Board(pub [[[Tile; 2]; 8]; 8]);
+pub struct Board(pub [[[Tile; 2]; 8]; 8]);
 
 impl Default for Board {
     fn default() -> Self {
@@ -16,7 +15,7 @@ impl Default for Board {
 }
 
 impl Board {
-    pub(crate) fn generate_mines(&mut self, initial_click: &Click, number_of_mines: usize) {
+    pub fn generate_mines(&mut self, initial_click: &Click, number_of_mines: usize) {
         self.generate_board(initial_click, number_of_mines);
     }
 
@@ -128,7 +127,7 @@ impl Board {
     //     }
     // }
 
-    fn is_new_board(&self) -> bool {
+    pub fn is_new_board(&self) -> bool {
         for i in self.0 {
             for j in i {
                 let Tile(number) = j[0];
@@ -142,11 +141,7 @@ impl Board {
         true
     }
 
-    pub(crate) fn reveal_tile(&mut self, x: usize, y: usize) -> i32 {
-        if self.is_new_board() {
-            self.generate_mines(&Click { x, y }, 10);
-        }
-
+    pub fn reveal_tile(&mut self, x: usize, y: usize) -> i32 {
         let Tile(number) = self.0[y][x][1];
 
         let Tile(revealed) = self.0[y][x][0];
@@ -176,7 +171,7 @@ impl Board {
         }
     }
 
-    pub(crate) fn remaining_unrevealed_tiles(&self) -> i32 {
+    pub fn remaining_unrevealed_tiles(&self) -> i32 {
         let mut remaining_tiles = 0;
 
         for i in self.0 {
@@ -280,7 +275,7 @@ impl Board {
 }
 
 impl Board {
-    pub(crate) fn print_board(&self) {
+    pub fn print_board(&self) {
         for row in self.0 {
             for tile in row {
                 let Tile(number) = tile[0];
@@ -301,7 +296,7 @@ impl Board {
         }
     }
 
-    pub(crate) fn reveal_solution(&self) {
+    pub fn reveal_solution(&self) {
         for row in self.0 {
             for tile in row {
                 let Tile(number) = tile[1];
@@ -315,12 +310,4 @@ impl Board {
             println!();
         }
     }
-}
-
-fn get_random_number(start_range: i32, end_range: i32) -> usize {
-    let mut rng = rand::thread_rng();
-
-    rng.gen_range(start_range..end_range)
-        .try_into()
-        .expect("Cannot convert to usize")
 }

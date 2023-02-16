@@ -3,7 +3,7 @@ use std::{io, num::ParseIntError};
 use crate::tiles::Board;
 
 #[derive(Clone, Copy)]
-pub(crate) struct Click {
+pub struct Click {
     pub x: usize,
     pub y: usize,
 }
@@ -16,13 +16,13 @@ enum Status {
 }
 
 #[derive(Clone)]
-pub(crate) struct Game {
-    pub(crate) board: Board,
+pub struct Game {
+    pub board: Board,
     result: Status,
 }
 
-impl Game {
-    pub(crate) fn default() -> Self {
+impl Default for Game {
+    fn default() -> Self {
         Self {
             board: Board::default(),
             result: Status::None,
@@ -31,7 +31,7 @@ impl Game {
 }
 
 // This function will be used to play the terminal version of the game
-pub(crate) fn game_loop() {
+pub fn game_loop() {
     let mut game = Game::default();
 
     loop {
@@ -40,6 +40,10 @@ pub(crate) fn game_loop() {
         // game.board.reveal_solution();
 
         let new_click = get_valid_click();
+
+        if game.board.is_new_board() {
+            game.board.generate_mines(&new_click, 10);
+        }
 
         let issue = game.board.reveal_tile(new_click.x, new_click.y);
 

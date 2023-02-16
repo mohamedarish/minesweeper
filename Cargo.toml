@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 iced = "0.7.0"
 rand = "0.8.5"
+stopwatch = "0.0.7"
 
 [profile.release]
 strip = true            # Automatically strip symbols from the binary.

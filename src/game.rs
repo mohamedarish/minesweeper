@@ -1,122 +1,81 @@
-use std::{io, num::ParseIntError};
+use druid::{Data, Lens};
 
-use crate::tiles::Board;
+use crate::board::{Board, Cell, Position};
 
-#[derive(Clone, Copy)]
-pub struct Click {
-    pub x: usize,
-    pub y: usize,
+#[derive(Clone, Data, PartialEq)]
+pub enum GameStatus {
+    Victory,
+    Loss,
+    NotDecided,
 }
 
-#[derive(PartialEq, Clone)]
-enum Status {
-    Lose,
-    None,
-    Win,
-}
-
-#[derive(Clone)]
-pub struct Game {
+#[derive(Clone, Data, Lens)]
+pub struct Minesweeper {
     pub board: Board,
-    result: Status,
+    pub result: GameStatus,
 }
 
-impl Default for Game {
-    fn default() -> Self {
+impl Minesweeper {
+    pub fn default(height: usize, width: usize, number_of_mines: usize) -> Self {
+        let board = vec![vec![Cell::default(); width]; height];
         Self {
-            board: Board::default(),
-            result: Status::None,
+            board: Board {
+                rows: board,
+                number_of_mines,
+            },
+            result: GameStatus::NotDecided,
         }
     }
 }
 
-// This function will be used to play the terminal version of the game
-pub fn game_loop() {
-    let mut game = Game::default();
-
-    loop {
-        game.board.print_board();
-
-        // game.board.reveal_solution();
-
-        let new_click = get_valid_click();
-
-        if game.board.is_new_board() {
-            game.board.generate_mines(&new_click, 10);
-        }
-
-        let issue = game.board.reveal_tile(new_click.x, new_click.y);
-
-        if issue < 0 {
-            game.result = Status::Lose;
-        }
-        if game.board.remaining_unrevealed_tiles() <= 10 {
-            game.result = Status::Win;
-        }
-
-        if game.result != Status::None {
-            if game.result == Status::Win {
-                game.board.print_board();
-                println!("Congrats");
-            } else {
-                game.board.reveal_solution();
-                println!("Better Luck Next Time");
+impl Minesweeper {
+    pub fn reveal_solution(&self) {
+        for y in 0..self.board.height() {
+            for x in 0..self.board.width() {
+                if self.board.rows[y][x].is_mine {
+                    print!("💣\t");
+                } else {
+                    print!("{}\t", self.board.tile_number(Position { x, y }));
+                }
             }
-            break;
+            println!();
+        }
+    }
+
+    pub fn print_board(&self) {
+        for y in 0..self.board.height() {
+            for x in 0..self.board.width() {
+                if self.board.rows[y][x].is_revealed {
+                    if self.board.rows[y][x].is_mine {
+                        print!("💣\t");
+                    } else {
+                        print!("{}\t", self.board.tile_number(Position { x, y }));
+                    }
+                } else {
+                    print!("🟧\t");
+                }
+            }
+            println!();
+        }
+    }
+
+    fn remaining_unrevealed_tiles(&self) -> usize {
+        let mut tiles = 0;
+
+        for y in 0..self.board.height() {
+            for x in 0..self.board.width() {
+                if !self.board.rows[y][x].is_revealed {
+                    tiles += 1;
+                }
+            }
+        }
+
+        tiles
+    }
+
+    pub fn result_decided(&mut self) {
+        if self.remaining_unrevealed_tiles() == self.board.number_of_mines {
+            self.result = GameStatus::Victory;
         }
     }
 }
-
-fn get_valid_click() -> Click {
-    loop {
-        let mut click = String::new();
-
-        io::stdin()
-            .read_line(&mut click)
-            .expect("Unable to parse line");
-
-        let mut subs_iter = click.split_whitespace();
-
-        let mut next_num = || -> Result<usize, ParseIntError> {
-            // subs_iter.next().expect("Not a number")
-            //     .parse().expect("Not a number");
-
-            subs_iter.next().expect("Not parsable").parse()
-        };
-
-        // let y = match next_num() {
-        //     Ok(num) => num,
-        //     Err(_) => {
-        //         println!("Please enter a valid number less than 7 and greater than 0");
-        //         continue;
-        //     }
-        // };
-
-        let Ok(y) = next_num() else {
-            println!("Please enter a valid number!");
-            continue;
-        };
-
-        let Ok(x) = next_num() else {
-            println!("Please enter a valid number!");
-            continue;
-        };
-
-        // let x = match next_num() {
-        //     Ok(num) => num,
-        //     Err(_) => {
-        //         println!("Please enter a valid number less than 7 and greater than 0");
-        //         continue;
-        //     }
-        // };
-
-        if x > 7 || y > 7 {
-            println!("Please enter a valid number less than 7 and greater than 0!");
-            continue;
-        }
-
-        break Click { x, y };
-    }
-}
-
-// impl Game {}

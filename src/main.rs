@@ -5,20 +5,14 @@
     clippy::unwrap_used
 )]
 
-use iced::{Application, Settings};
-use minesweeper::game::Game;
-use stopwatch::Stopwatch;
+use minesweeper::game_loop;
 
 fn main() {
-    // println!("Hello World 🌏");
+    // println!("Hello, World! 🌏");
 
-    // for terminal version of the gaem
+    // let mut game = Minesweeper::default(8, 8, 10);
 
-    let sw = Stopwatch::start_new();
+    // game.reveal_solution();
 
-    // game_loop();
-
-    Game::run(Settings::default()).expect("Working");
-
-    println!("Finished in {} ms", sw.elapsed_ms());
+    game_loop();
 }

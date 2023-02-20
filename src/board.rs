@@ -2,6 +2,12 @@ use druid::Data;
 
 use crate::generate_random_number;
 
+pub enum RevealStatus {
+    NotRevealed,
+    Flag,
+    Revealed,
+}
+
 #[derive(Clone, PartialEq, Default)]
 pub struct Cell {
     pub is_mine: bool,
@@ -119,7 +125,7 @@ impl Board {
 
                 self.rows[y][x].is_revealed = true;
 
-                if self.tile_number(click) == 0 {
+                if self.tile_number(Position { x, y }) == 0 {
                     self.reveal_cols(Position { x, y });
                 }
             }
@@ -131,7 +137,7 @@ impl Board {
 
                 self.rows[y][x].is_revealed = true;
 
-                if self.tile_number(click) == 0 {
+                if self.tile_number(Position { x, y }) == 0 {
                     self.reveal_cols(Position { x, y });
                 }
             }
@@ -143,7 +149,7 @@ impl Board {
 
                 self.rows[y][x].is_revealed = true;
 
-                if self.tile_number(click) == 0 {
+                if self.tile_number(Position { x, y }) == 0 {
                     self.reveal_cols(Position { x, y });
                 }
             }

@@ -13,5 +13,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: apt install gtk3
-      run: cargo build --verbose
+      run: apt install gtk3 && cargo build --verbose

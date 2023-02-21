@@ -82,8 +82,6 @@ fn reveal_test_middle() {
 
     board.reveal_tile(Position { x, y });
 
-    println!("{} {}", y, x);
-
     let number = board.rows[y][x].number;
 
     assert_eq!(number, 8);

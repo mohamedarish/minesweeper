@@ -1,15 +1,17 @@
-use druid::{Data, Lens};
+// use druid::{Data, Lens};
 
 use crate::board::{Board, Cell, Position};
 
-#[derive(Clone, Data, PartialEq)]
+// This needs data
+#[derive(Clone, PartialEq)]
 pub enum GameStatus {
     Victory,
     Loss,
     NotDecided,
 }
 
-#[derive(Clone, Data, Lens)]
+// This needs Data and Lens
+#[derive(Clone)]
 pub struct Minesweeper {
     pub board: Board,
     pub result: GameStatus,

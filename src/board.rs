@@ -1,4 +1,4 @@
-// use druid::Data;
+use druid::Data;
 
 use crate::generate_random_number;
 
@@ -21,13 +21,13 @@ pub struct Position {
     pub y: usize,
 }
 
-// impl Data for Cell {
-//     fn same(&self, other: &Self) -> bool {
-//         self.is_mine == other.is_mine
-//             && self.is_revealed == other.is_revealed
-//             && self.number == other.number
-//     }
-// }
+impl Data for Cell {
+    fn same(&self, other: &Self) -> bool {
+        self.is_mine == other.is_mine
+            && self.is_revealed == other.is_revealed
+            && self.number == other.number
+    }
+}
 
 #[derive(Clone)]
 pub struct Board {
@@ -51,11 +51,11 @@ impl Board {
     }
 }
 
-// impl Data for Board {
-//     fn same(&self, other: &Self) -> bool {
-//         self.rows == other.rows
-//     }
-// }
+impl Data for Board {
+    fn same(&self, other: &Self) -> bool {
+        self.rows == other.rows
+    }
+}
 
 impl Board {
     pub fn height(&self) -> usize {

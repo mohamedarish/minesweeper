@@ -1,5 +1,6 @@
 pub mod board;
 pub mod game;
+pub mod gui;
 
 use std::{io, num::ParseIntError};
 

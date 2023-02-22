@@ -1,5 +1,3 @@
-use druid::Data;
-
 use crate::generate_random_number;
 
 #[derive(PartialEq, Clone, Copy)]
@@ -28,12 +26,6 @@ pub struct Position {
     pub y: usize,
 }
 
-impl Data for Cell {
-    fn same(&self, other: &Self) -> bool {
-        self.is_mine == other.is_mine && self.status == other.status && self.number == other.number
-    }
-}
-
 #[derive(Clone)]
 pub struct Board {
     pub rows: Vec<Vec<Cell>>,
@@ -53,12 +45,6 @@ impl Board {
             rows: board,
             number_of_mines,
         }
-    }
-}
-
-impl Data for Board {
-    fn same(&self, other: &Self) -> bool {
-        self.rows == other.rows
     }
 }
 

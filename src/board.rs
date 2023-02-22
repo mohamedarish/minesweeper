@@ -2,16 +2,23 @@ use druid::Data;
 
 use crate::generate_random_number;
 
+#[derive(PartialEq, Clone, Copy)]
 pub enum RevealStatus {
     NotRevealed,
     Flag,
     Revealed,
 }
 
+impl Default for RevealStatus {
+    fn default() -> Self {
+        Self::NotRevealed
+    }
+}
+
 #[derive(Clone, PartialEq, Default)]
 pub struct Cell {
     pub is_mine: bool,
-    pub is_revealed: bool,
+    pub status: RevealStatus,
     pub number: usize,
 }
 
@@ -23,9 +30,7 @@ pub struct Position {
 
 impl Data for Cell {
     fn same(&self, other: &Self) -> bool {
-        self.is_mine == other.is_mine
-            && self.is_revealed == other.is_revealed
-            && self.number == other.number
+        self.is_mine == other.is_mine && self.status == other.status && self.number == other.number
     }
 }
 
@@ -69,12 +74,89 @@ impl Board {
     fn is_new_board(&self) -> bool {
         for y in 0..self.height() {
             for x in 0..self.width() {
-                if self.rows[y][x].is_revealed {
+                if self.is_revealed(Position { x, y }) {
                     return false;
                 }
             }
         }
 
+        true
+    }
+
+    pub fn set_flag(&mut self, position: Position) {
+        self.rows[position.y][position.x].status = RevealStatus::Flag;
+    }
+
+    pub fn unset_flag(&mut self, position: Position) {
+        self.rows[position.y][position.x].status = RevealStatus::NotRevealed;
+    }
+
+    fn db_click(&mut self, position: Position) -> bool {
+        self.dbc_rows(position)
+    }
+
+    fn dbc_rows(&mut self, position: Position) -> bool {
+        if position.y == 0 {
+            for y in 0..2 {
+                let status = self.dbc_cols(position, y);
+
+                if !status {
+                    return false;
+                }
+            }
+        } else if position.y == self.height() - 1 {
+            for y in (position.y - 1)..self.height() {
+                let status = self.dbc_cols(position, y);
+
+                if !status {
+                    return false;
+                }
+            }
+        } else {
+            for y in (position.y - 1)..(position.y + 2) {
+                let status = self.dbc_cols(position, y);
+
+                if !status {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    fn dbc_cols(&mut self, position: Position, y: usize) -> bool {
+        if position.x == 0 {
+            for x in 0..2 {
+                if !self.is_revealed(position) && !self.is_flag(position) {
+                    self.reveal_tile(Position { x, y });
+
+                    if self.rows[y][x].is_mine {
+                        return false;
+                    }
+                }
+            }
+        } else if position.x == self.width() - 1 {
+            for x in (position.x - 1)..self.width() {
+                if !self.is_revealed(position) && !self.is_flag(position) {
+                    self.reveal_tile(Position { x, y });
+                }
+
+                if self.rows[y][x].is_mine {
+                    return false;
+                }
+            }
+        } else {
+            for x in (position.x - 1)..(position.x + 2) {
+                if !self.is_revealed(position) && !self.is_flag(position) {
+                    self.reveal_tile(Position { x, y });
+                }
+
+                if self.rows[y][x].is_mine {
+                    return false;
+                }
+            }
+        }
         true
     }
 
@@ -87,10 +169,12 @@ impl Board {
             return TileStatus::Mine;
         }
 
-        if self.rows[click.y][click.x].is_revealed {
-            todo!("Implement doubleclick")
+        if self.rows[click.y][click.x].status == RevealStatus::Revealed {
+            if self.nearby_flags(click) == self.tile_number(click) && !self.db_click(click) {
+                return TileStatus::Mine;
+            }
         } else {
-            self.rows[click.y][click.x].is_revealed = true;
+            self.rows[click.y][click.x].status = RevealStatus::Revealed;
 
             if self.tile_number(click) == 0 {
                 self.reveal_cols(click);
@@ -119,11 +203,11 @@ impl Board {
     fn reveal_row(&mut self, click: Position, x: usize) {
         if click.y == 0 {
             for y in 0..2 {
-                if self.rows[y][x].is_revealed {
+                if self.is_revealed(Position { x, y }) {
                     continue;
                 }
 
-                self.rows[y][x].is_revealed = true;
+                self.rows[y][x].status = RevealStatus::Revealed;
 
                 if self.tile_number(Position { x, y }) == 0 {
                     self.reveal_cols(Position { x, y });
@@ -131,11 +215,11 @@ impl Board {
             }
         } else if click.y == self.height() - 1 {
             for y in (click.y - 1)..self.height() {
-                if self.rows[y][x].is_revealed {
+                if self.is_revealed(Position { x, y }) {
                     continue;
                 }
 
-                self.rows[y][x].is_revealed = true;
+                self.rows[y][x].status = RevealStatus::Revealed;
 
                 if self.tile_number(Position { x, y }) == 0 {
                     self.reveal_cols(Position { x, y });
@@ -143,17 +227,66 @@ impl Board {
             }
         } else {
             for y in (click.y - 1)..(click.y + 2) {
-                if self.rows[y][x].is_revealed {
+                if self.is_revealed(Position { x, y }) {
                     continue;
                 }
 
-                self.rows[y][x].is_revealed = true;
+                self.rows[y][x].status = RevealStatus::Revealed;
 
                 if self.tile_number(Position { x, y }) == 0 {
                     self.reveal_cols(Position { x, y });
                 }
             }
         }
+    }
+
+    fn nearby_flags(&self, position: Position) -> usize {
+        self.nf_rows(position)
+    }
+
+    fn nf_rows(&self, position: Position) -> usize {
+        let mut count = 0;
+        if position.y == 0 {
+            for y in 0..2 {
+                count += self.nf_cols(position, y);
+            }
+        } else if position.y == self.height() - 1 {
+            for y in (position.y - 1)..self.height() {
+                count += self.nf_cols(position, y);
+            }
+        } else {
+            for y in (position.y - 1)..(position.y + 2) {
+                count += self.nf_cols(position, y);
+            }
+        }
+
+        count
+    }
+
+    fn nf_cols(&self, position: Position, y: usize) -> usize {
+        let mut count = 0;
+
+        if position.x == 0 {
+            for x in 0..2 {
+                if self.is_flag(Position { x, y }) {
+                    count += 1;
+                }
+            }
+        } else if position.x == self.width() - 1 {
+            for x in (position.x - 1)..self.width() {
+                if self.is_flag(Position { x, y }) {
+                    count += 1;
+                }
+            }
+        } else {
+            for x in (position.x - 1)..(position.x + 2) {
+                if self.is_flag(Position { x, y }) {
+                    count += 1;
+                }
+            }
+        }
+
+        count
     }
 
     pub fn tile_number(&self, position: Position) -> usize {
@@ -172,7 +305,7 @@ impl Board {
         self.set_tile_numbers();
     }
 
-    fn nearby_mines_row_check(&self, position: Position, y: usize) -> usize {
+    fn nm_cols(&self, position: Position, y: usize) -> usize {
         let mut mines = 0;
 
         if position.x == 0 {
@@ -198,24 +331,28 @@ impl Board {
         mines
     }
 
-    fn nearby_mines(&self, position: Position) -> usize {
+    fn nm_rows(&self, position: Position) -> usize {
         let mut mines = 0;
 
         if position.y == 0 {
             for y in 0..2 {
-                mines += self.nearby_mines_row_check(position, y);
+                mines += self.nm_cols(position, y);
             }
         } else if position.y == self.height() - 1 {
             for y in (position.y - 1)..(self.height()) {
-                mines += self.nearby_mines_row_check(position, y);
+                mines += self.nm_cols(position, y);
             }
         } else {
             for y in (position.y - 1)..(position.y + 2) {
-                mines += self.nearby_mines_row_check(position, y);
+                mines += self.nm_cols(position, y);
             }
         }
 
         mines
+    }
+
+    fn nearby_mines(&self, position: Position) -> usize {
+        self.nm_rows(position)
     }
 
     fn set_tile_numbers(&mut self) {
@@ -228,6 +365,20 @@ impl Board {
                 self.rows[y][x].number = self.nearby_mines(Position { x, y });
             }
         }
+    }
+
+    pub fn is_revealed(&self, position: Position) -> bool {
+        if self.rows[position.y][position.x].status == RevealStatus::Revealed {
+            return true;
+        }
+        false
+    }
+
+    pub fn is_flag(&self, position: Position) -> bool {
+        if self.rows[position.y][position.x].status == RevealStatus::Flag {
+            return true;
+        }
+        false
     }
 
     fn gen_mine(&mut self, initial_click: Position) {

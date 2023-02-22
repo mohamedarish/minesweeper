@@ -97,6 +97,8 @@ pub fn game_loop() {
             game.result = GameStatus::Loss;
         }
 
+        game.result_decided();
+
         match game.result {
             GameStatus::Victory => {
                 println!("Congrats!!");

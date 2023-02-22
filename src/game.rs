@@ -45,7 +45,7 @@ impl Minesweeper {
     pub fn print_board(&self) {
         for y in 0..self.board.height() {
             for x in 0..self.board.width() {
-                if self.board.rows[y][x].is_revealed {
+                if self.board.is_revealed(Position { x, y }) {
                     if self.board.rows[y][x].is_mine {
                         print!("💣\t");
                     } else {
@@ -64,7 +64,7 @@ impl Minesweeper {
 
         for y in 0..self.board.height() {
             for x in 0..self.board.width() {
-                if !self.board.rows[y][x].is_revealed {
+                if !self.board.is_revealed(Position { x, y }) {
                     tiles += 1;
                 }
             }

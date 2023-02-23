@@ -32,7 +32,7 @@ pub struct Board {
     pub number_of_mines: usize,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum TileStatus {
     Number,
     Mine,

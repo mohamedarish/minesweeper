@@ -1,6 +1,6 @@
 use crate::board::{Board, Cell, Position};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum GameStatus {
     Victory,
     Loss,

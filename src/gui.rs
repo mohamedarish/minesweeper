@@ -1,9 +1,9 @@
+use crate::{board::Position, game::Minesweeper};
 use iced::{
+    alignment, theme,
     widget::{container, Button, Column, Row, Text},
     Length, Sandbox,
 };
-
-use crate::{board::Position, game::Minesweeper};
 
 #[derive(Debug, Clone)]
 pub enum ClickType {
@@ -43,13 +43,33 @@ impl Sandbox for Minesweeper {
         for y in 0..self.board.height() {
             let mut row = Row::new();
             for x in 0..self.board.width() {
+                let button_theme;
+
+                let button_text = match self.board.rows[y][x].status {
+                    crate::board::RevealStatus::NotRevealed => {
+                        button_theme = theme::Button::Secondary;
+                        Text::new(" ")
+                    }
+                    crate::board::RevealStatus::Flag => {
+                        button_theme = theme::Button::Secondary;
+                        Text::new("F")
+                    }
+                    crate::board::RevealStatus::Revealed => {
+                        button_theme = theme::Button::Primary;
+                        Text::new(format!("{}", self.board.tile_number(Position { x, y })))
+                    }
+                };
+
                 row = row.push(
-                    Button::new(Text::new(format!(
-                        "{}",
-                        self.board.tile_number(Position { x, y })
-                    )))
-                    .padding(25)
-                    .on_press(ClickType::Left(x, y)),
+                    Button::new(
+                        button_text
+                            .horizontal_alignment(alignment::Horizontal::Center)
+                            .vertical_alignment(alignment::Vertical::Center),
+                    )
+                    .on_press(ClickType::Left(x, y))
+                    .style(button_theme)
+                    .height(80.)
+                    .width(80.),
                 );
             }
             col = col.push(row);

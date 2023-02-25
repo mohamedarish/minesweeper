@@ -1,3 +1,5 @@
+use iced_native::mouse::Button;
+
 use crate::board::{Board, Cell, Position};
 
 #[derive(Clone, PartialEq, Debug)]
@@ -11,6 +13,7 @@ pub enum GameStatus {
 pub struct Minesweeper {
     pub board: Board,
     pub result: GameStatus,
+    pub button_state: Button,
 }
 
 impl Minesweeper {
@@ -22,6 +25,7 @@ impl Minesweeper {
                 number_of_mines,
             },
             result: GameStatus::NotDecided,
+            button_state: Button::Middle,
         }
     }
 }

@@ -86,4 +86,14 @@ impl Minesweeper {
             self.timer.stop();
         }
     }
+
+    pub fn reveal_mines(&mut self) {
+        for y in 0..self.board.height() {
+            for x in 0..self.board.width() {
+                if self.board.rows[y][x].is_mine {
+                    self.board.reveal_tile(Position { x, y });
+                }
+            }
+        }
+    }
 }

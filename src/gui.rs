@@ -111,11 +111,11 @@ impl Sandbox for Minesweeper {
                         "{}:{}:{}",
                         self.timer
                             .elapsed_ms()
-                            .checked_div(3600000)
+                            .checked_div(360000)
                             .expect("Cannot divide"),
                         self.timer
                             .elapsed_ms()
-                            .checked_div(60000)
+                            .checked_div(6000)
                             .expect("Cannot divide"),
                         self.timer
                             .elapsed_ms()

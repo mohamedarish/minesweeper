@@ -1,19 +1,19 @@
-use iced_native::mouse::Button;
+use stopwatch::Stopwatch;
 
 use crate::board::{Board, Cell, Position};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum GameStatus {
+    NotDecided,
     Victory,
     Loss,
-    NotDecided,
 }
 
 #[derive(Clone)]
 pub struct Minesweeper {
     pub board: Board,
     pub result: GameStatus,
-    pub button_state: Button,
+    pub timer: Stopwatch,
 }
 
 impl Minesweeper {
@@ -25,7 +25,7 @@ impl Minesweeper {
                 number_of_mines,
             },
             result: GameStatus::NotDecided,
-            button_state: Button::Middle,
+            timer: Stopwatch::start_new(),
         }
     }
 }
@@ -78,6 +78,12 @@ impl Minesweeper {
     pub fn result_decided(&mut self) {
         if self.remaining_unrevealed_tiles() == self.board.number_of_mines {
             self.result = GameStatus::Victory;
+        }
+    }
+
+    pub fn stop_timer(&mut self) {
+        if self.result != GameStatus::NotDecided {
+            self.timer.stop();
         }
     }
 }

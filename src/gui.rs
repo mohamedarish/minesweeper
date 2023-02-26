@@ -1,6 +1,10 @@
-use crate::{board::Position, game::Minesweeper};
+use crate::{
+    board::{Position, TileStatus},
+    game::{GameStatus, Minesweeper},
+};
 use iced::{
-    alignment, theme,
+    alignment,
+    theme::Button::{Destructive, Primary},
     widget::{container, Button, Column, Row, Text},
     Length, Sandbox,
 };
@@ -26,7 +30,11 @@ impl Sandbox for Minesweeper {
     fn update(&mut self, message: Self::Message) {
         match message {
             ClickType::Left(x, y) => {
-                self.board.reveal_tile(Position { x, y });
+                let res = self.board.reveal_tile(Position { x, y });
+
+                if res == TileStatus::Mine {
+                    self.result = GameStatus::Loss;
+                }
             }
             ClickType::Right(x, y) => {
                 self.board.set_flag(Position { x, y });
@@ -34,11 +42,18 @@ impl Sandbox for Minesweeper {
             ClickType::Double(_, _) => todo!(),
         }
         self.result_decided();
+        self.stop_timer();
         println!("{:?}", self.result);
     }
 
     fn view(&self) -> iced::Element<'_, Self::Message> {
         let mut col = Column::new();
+
+        let mut timer_row = Row::new();
+
+        timer_row = timer_row.push(Text::new(format!("{}", self.timer.elapsed_ms())));
+
+        col = col.push(timer_row);
 
         for y in 0..self.board.height() {
             let mut row = Row::new();
@@ -47,16 +62,21 @@ impl Sandbox for Minesweeper {
 
                 let button_text = match self.board.rows[y][x].status {
                     crate::board::RevealStatus::NotRevealed => {
-                        button_theme = theme::Button::Secondary;
+                        button_theme = Primary;
                         Text::new(" ")
                     }
                     crate::board::RevealStatus::Flag => {
-                        button_theme = theme::Button::Secondary;
+                        button_theme = Primary;
                         Text::new("F")
                     }
                     crate::board::RevealStatus::Revealed => {
-                        button_theme = theme::Button::Primary;
-                        Text::new(format!("{}", self.board.tile_number(Position { x, y })))
+                        if self.board.rows[y][x].is_mine {
+                            button_theme = Destructive;
+                            Text::new("💣")
+                        } else {
+                            button_theme = Primary;
+                            Text::new(format!("{}", self.board.tile_number(Position { x, y })))
+                        }
                     }
                 };
 
@@ -75,12 +95,77 @@ impl Sandbox for Minesweeper {
             col = col.push(row);
         }
 
-        container(col)
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .center_x()
-            .center_y()
-            .into()
+        match self.result {
+            GameStatus::Victory => {
+                let mut col = Column::new().push(
+                    Text::new("V for victory")
+                        .horizontal_alignment(alignment::Horizontal::Center)
+                        .vertical_alignment(alignment::Vertical::Bottom)
+                        .size(20.)
+                        .height(400.)
+                        .width(800.),
+                );
+
+                col = col.push(
+                    Text::new(format!(
+                        "{}:{}:{}",
+                        self.timer
+                            .elapsed_ms()
+                            .checked_div(3600000)
+                            .expect("Cannot divide"),
+                        self.timer
+                            .elapsed_ms()
+                            .checked_div(60000)
+                            .expect("Cannot divide"),
+                        self.timer
+                            .elapsed_ms()
+                            .checked_div(100)
+                            .expect("Cannot divide")
+                    ))
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .vertical_alignment(alignment::Vertical::Top)
+                    .width(800.)
+                    .height(400.),
+                );
+                container(col)
+                    .center_x()
+                    .center_y()
+                    .width(800.)
+                    .height(800.)
+                    .into()
+            }
+            GameStatus::Loss => {
+                let mut col = Column::new().push(
+                    Text::new("try again next time")
+                        .horizontal_alignment(alignment::Horizontal::Center)
+                        .vertical_alignment(alignment::Vertical::Bottom)
+                        .size(20.)
+                        .height(400.)
+                        .width(800.),
+                );
+
+                col = col.push(
+                    Text::new(format!("{} ms", self.timer.elapsed_ms()))
+                        .horizontal_alignment(alignment::Horizontal::Center)
+                        .vertical_alignment(alignment::Vertical::Top)
+                        .height(400.)
+                        .width(800.),
+                );
+
+                container(col)
+                    .center_x()
+                    .center_y()
+                    .width(800.)
+                    .height(800.)
+                    .into()
+            }
+            GameStatus::NotDecided => container(col)
+                .width(Length::Fixed(800.))
+                .height(Length::Fixed(800.))
+                .center_x()
+                .center_y()
+                .into(),
+        }
     }
 
     fn theme(&self) -> iced::Theme {

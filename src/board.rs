@@ -152,6 +152,7 @@ impl Board {
         }
 
         if self.rows[click.y][click.x].is_mine {
+            self.rows[click.y][click.x].status = RevealStatus::Revealed;
             return TileStatus::Mine;
         }
 

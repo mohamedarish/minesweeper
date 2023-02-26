@@ -24,5 +24,13 @@ fn main() {
 
     // println!("You took {} ms", sw.elapsed_ms());
 
-    Minesweeper::run(Settings::default()).expect("Could not launch the GUI");
+    let settings = Settings {
+        window: iced::window::Settings {
+            size: (800, 800),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    Minesweeper::run(settings).expect("Could not launch the GUI");
 }
